@@ -18,6 +18,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Solana Payments API')
     .setVersion('1.0')
+    .addServer('http://localhost:3000/v1')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
