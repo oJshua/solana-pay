@@ -1,63 +1,63 @@
-import React, { useMemo } from "react";
-import { usePaymentSession } from "../providers/PaymentSessionProvider";
+import React, { useEffect, useMemo, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { PaymentOptions } from "./payment/PaymentOptions";
+import { usePaymentSession, usePaymentStatus } from "../providers/PaymentSessionProvider";
+import fetch from 'cross-fetch';
+import { createQR } from '@solana/pay';
+import parse from 'html-react-parser';
 
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import {
-  getLedgerWallet,
-  getPhantomWallet,
-  getSlopeWallet,
-  getSolflareWallet,
-  getSolletExtensionWallet,
-  getSolletWallet,
-  getTorusWallet,
-} from '@solana/wallet-adapter-wallets';
-import {
-  WalletModalProvider,
-  WalletDisconnectButton,
-  WalletMultiButton
-} from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
-
-// Default styles that can be overridden by your app
-require('@solana/wallet-adapter-react-ui/styles.css');
+const POLL_INTERVAL = 5000;
 
 export function Payment() {
-  const session = usePaymentSession();
+  const { paymentSessionId, paymentUrl } = usePaymentSession();
+  const { publicKey } = useWallet();
+  const [ signature, setSignature ] = useState(null);
+  const { setPaymentStatus } = usePaymentStatus();
 
-  // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Devnet;
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const check = await fetch(`${process.env.REACT_APP_PAYMENTS_API_URL}/v1/payment-session/check?paymentSessionId=${paymentSessionId}`);
+        setSignature(await check.json());
+      } catch(error) {
 
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+      }
+    }, POLL_INTERVAL);
 
-  // @solana/wallet-adapter-wallets includes all the adapters but supports tree shaking --
-  // Only the wallets you configure here will be compiled into your application
-  const wallets = useMemo(() => [
-    getPhantomWallet(),
-    getSlopeWallet(),
-    getSolflareWallet(),
-    getTorusWallet({
-      options: { clientId: 'Get a client ID @ https://developer.tor.us' }
-    }),
-    getLedgerWallet(),
-    getSolletWallet({ network }),
-    getSolletExtensionWallet({ network }),
-  ], [network]);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  console.log(session);
+  useEffect(() => {
+    if (signature) {
+      setPaymentStatus("complete");
+    }
+  }, [signature, setPaymentStatus]);
 
+  const qrCode = useMemo(() => {
+    const qr = createQR(paymentUrl);
+    return parse(qr);
+  }, [paymentUrl]);
 
   return (
+    <div className="flex-container">
+      <h2>SolPay</h2>
 
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <h3>SolPay</h3>
-          <WalletMultiButton />
-          <WalletDisconnectButton />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+      {!publicKey && <h3>Connect a wallet or scan the QR code below to send a payment.</h3>}
+
+      <div className="qr">
+        {qrCode}
+      </div>
+
+      <div className="row">
+        {!publicKey && <WalletMultiButton />}
+        {publicKey && <WalletDisconnectButton />}
+        <PaymentOptions />
+      </div>
+    </div>
   );
 }

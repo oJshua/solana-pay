@@ -7,5 +7,6 @@ import { JwksController } from './jwks/jwks.controller';
   imports: [ConfigModule],
   providers: [KeystoreService],
   controllers: [JwksController],
+  exports: [KeystoreService]
 })
 export class SecurityModule {}

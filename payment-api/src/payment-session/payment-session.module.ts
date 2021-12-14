@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentSession } from 'src/entities/payment-session.entity';
+import { SecurityModule } from 'src/security/security.module';
 import { ServicesModule } from 'src/services/services.module';
-import { PaymentsController } from './payments/payments.controller';
+import { PaymentSessionController } from './payment-session.controller';
 
 @Module({
+  controllers: [PaymentSessionController],
   imports: [
     TypeOrmModule.forFeature([PaymentSession]),
-    ConfigModule,
-    ServicesModule,
-  ],
-  controllers: [PaymentsController],
+    SecurityModule,
+    ServicesModule
+  ]
 })
-export class TestModule {}
+export class PaymentSessionModule {}

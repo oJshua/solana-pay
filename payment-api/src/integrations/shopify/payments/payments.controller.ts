@@ -1,8 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentSession } from 'src/entities/payment-session.entity';
-import { InitiateRequestDto } from 'src/integrations/shopify/dto/initiate-request.dto';
+import { InitiatePaymentDto } from 'src/integrations/shopify/dto/initiate-payment.dto';
+import { InitiateRefundDto } from 'src/integrations/shopify/dto/intiate-refund.dto';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 
@@ -20,24 +21,32 @@ export class PaymentsController {
 
   @Post('initiate')
   async initiatePayment(
-    @Body() body: InitiateRequestDto,
+    @Body() body: InitiatePaymentDto,
   ): Promise<RedirectUrl> {
-    const sessionId = v4();
+    const paymentSessionId = v4();
 
     await this.paymentSessionRepository.create({
-      sessionId,
+      paymentSessionId,
       integration: 'shopify',
       meta: body,
     });
 
     return {
-      redirect_url: this.getRedirectUrl(sessionId),
+      redirect_url: this.getRedirectUrl(paymentSessionId),
     };
   }
 
-  getRedirectUrl(sessionId: string) {
+  @Post('refund')
+  async initiateRefund(
+    @Res() res,
+    @Body() body: InitiateRefundDto
+  ) {
+    return res.code(201);
+  }
+
+  getRedirectUrl(paymentSessionId: string) {
     return `${this.configService.get<string>(
       'FRONTEND_URL',
-    )}?sessionId=${sessionId}`;
+    )}?paymentSessionId=${paymentSessionId}`;
   }
 }

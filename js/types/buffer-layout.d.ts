@@ -21,7 +21,7 @@ declare module 'buffer-layout' {
      *
      * @abstract
      */
-    export class Layout<T> {
+    export class Layout<T = any> {
         span: number;
         property?: string;
         boundConstructor_?: any;

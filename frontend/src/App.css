@@ -1,4 +1,23 @@
 body {
-  background-color: #303030;
+  background-color: hsl(0, 0%, 19%);
   color: white;
+  padding: 2rem 5rem;
+}
+
+.flex-container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.row {
+  width: auto;
+  display: flex;
+}
+
+.qr {
+  width: 256px;
+  height: 256px;
+  border: 1px solid white;
+  margin: 3.5rem;
 }

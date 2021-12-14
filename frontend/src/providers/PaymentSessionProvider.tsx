@@ -4,65 +4,96 @@ import { useQuery } from "../utils/url";
 import jwktopem from 'jwk-to-pem';
 import jwt from 'jsonwebtoken';
 import fetch from 'cross-fetch';
+import { BigNumber } from 'bignumber.js';
 
-export type PaymentSession = any; // tbd
+export interface PaymentOption {
+  tokenMint?: string;
+  tokenSymbol?: string;
+  amount: BigNumber;
+}
+
+export interface PaymentInformation {
+  recipient: string;
+  reference: string;
+  paymentOptions: PaymentOption[];
+}
+
+export type PaymentSession = {
+  paymentSessionId: string;
+  paymentInformation: PaymentInformation;
+  paymentUrl: string;
+};
+
+export type PaymentStatus = "incomplete" | "canceled" | "complete" | "errored";
 
 const PaymentSessionContext = React.createContext<PaymentSession | undefined>(undefined);
+
+const PaymentStatusContext = React.createContext<{
+  paymentStatus: PaymentStatus,
+  setPaymentStatus: Function
+} | undefined>(undefined);
 
 type PaymentScopeProviderProps = { children: React.ReactNode };
 
 export function PaymentSessionProvider({ children }: PaymentScopeProviderProps) {
-  const sessionId = useQuery().get('sessionId');
+  const paymentSessionId = useQuery().get('paymentSessionId');
   const location = useLocation();
 
   const [decoded, setDecoded] = useState<undefined | PaymentSession>(undefined);
   const [sessionEstablished, setSessionEstablished] = useState(false);
-  const [error, setError] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("incomplete");
 
   useEffect(() => {
     (async () => {
       try {
-        if (sessionId) {
+        if (paymentSessionId) {
           delete sessionStorage['jwt'];
         }
 
-        const jwksRequest = await fetch('http://localhost:3000/v1/jwks.json');
+        const jwksRequest = await fetch(`${process.env.REACT_APP_PAYMENTS_API_URL}/v1/jwks.json`);
         const jwks = await jwksRequest.json();
         const [key] = jwks.keys;
         const publicKey = jwktopem(key);
 
         let token = sessionStorage['jwt'];
 
-        if (!token && !sessionId) {
-          return setError(true);
+        if (!token && !paymentSessionId) {
+          return setPaymentStatus("errored");
         }
 
         if (!token) {
-          const jwtRequest = await fetch(`http://localhost:3000/v1/payments/session-token`, {
-            method: 'POST',
+          const jwtRequest = await fetch(`${process.env.REACT_APP_PAYMENTS_API_URL}/v1/payment-session?paymentSessionId=${paymentSessionId}`, {
+            method: 'GET',
             headers: {
               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              sessionId
-            })
+            }
           });
           token = await jwtRequest.text();
         }
 
-        const decoded = jwt.verify(token, publicKey);
+        const decoded = jwt.verify(token, publicKey) as PaymentSession
+
         sessionStorage['jwt'] = token;
+
         setDecoded(decoded);
         setSessionEstablished(true);
       } catch (error) {
-        setError(true);
+        console.log(error);
+        setPaymentStatus("errored");
       }
     })()
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (error) {
+  if (paymentStatus === "errored") {
     return (
       <Redirect to="/error" push />
+    );
+  }
+
+  if (paymentStatus === "complete") {
+    delete sessionStorage['jwt'];
+    return (
+      <Redirect to="/success" />
     );
   }
 
@@ -78,15 +109,25 @@ export function PaymentSessionProvider({ children }: PaymentScopeProviderProps) 
 
   return (
     <PaymentSessionContext.Provider value={decoded}>
-      {children}
+      <PaymentStatusContext.Provider value={{ paymentStatus, setPaymentStatus }}>
+        {children}
+      </PaymentStatusContext.Provider>
     </PaymentSessionContext.Provider>
   );
 }
 
-export function usePaymentSession() {
+export function usePaymentSession(): PaymentSession {
   const context = React.useContext(PaymentSessionContext);
   if (!context) {
     throw new Error('usePaymentSession must be used within a PaymentSessionProvider');
+  }
+  return context;
+}
+
+export function usePaymentStatus() {
+  const context = React.useContext(PaymentStatusContext);
+  if (!context) {
+    throw new Error('usePaymentStatus must be used within a PaymentSessionProvider');
   }
   return context;
 }
