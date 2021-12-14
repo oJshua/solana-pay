@@ -4,6 +4,10 @@ body {
   padding: 2rem 5rem;
 }
 
+h2 {
+  margin-bottom: 0;
+}
+
 .flex-container {
   display: flex;
   align-items: center;
@@ -20,4 +24,15 @@ body {
   height: 256px;
   border: 1px solid white;
   margin: 3.5rem;
+}
+
+.loader {
+  width: 192px;
+  height: 192px;
+  padding: 32px;
+  margin: 3.5rem;
+}
+
+a {
+  color: white;
 }

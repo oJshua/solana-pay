@@ -3,7 +3,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Button } from "@solana/wallet-adapter-react-ui/lib/Button";
 import { PublicKey } from "@solana/web3.js";
 import { BigNumber } from "bignumber.js";
-import { PaymentOption, usePaymentSession } from "../../providers/PaymentSessionProvider";
+import { PaymentOption, usePaymentSession, usePaymentStatus } from "../../providers/PaymentSessionProvider";
 import { createTransaction } from "@solana/pay";
 
 export function SendPayment(
@@ -14,6 +14,7 @@ export function SendPayment(
   const session = usePaymentSession();
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
+  const { setPaymentStatus } = usePaymentStatus();
 
   let symbol;
 
@@ -42,6 +43,8 @@ export function SendPayment(
       );
 
       const res = await sendTransaction(transaction, connection);
+
+      setPaymentStatus("submitted");
 
       console.log(res);
     } catch (error) {

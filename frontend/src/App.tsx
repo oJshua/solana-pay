@@ -5,6 +5,7 @@ import { Landing } from './components/Landing';
 import { PaymentSessionProvider } from './providers/PaymentSessionProvider';
 import { Payment } from './components/Payment';
 import { WalletAdapterProvider } from './providers/WalletAdapterProvider';
+import { Success } from './components/Success';
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 function App() {
@@ -16,9 +17,7 @@ function App() {
         </div>
       </Route>
       <Route exact path="/success">
-        <div className="flex-container">
-          <h1>Payment completed successfully.</h1>
-        </div>
+        <Success />
       </Route>
       <PaymentSessionProvider>
         <Route exact path="/">

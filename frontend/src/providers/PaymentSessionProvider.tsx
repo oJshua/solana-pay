@@ -24,13 +24,15 @@ export type PaymentSession = {
   paymentUrl: string;
 };
 
-export type PaymentStatus = "incomplete" | "canceled" | "complete" | "errored";
+export type PaymentStatus = "incomplete" | "canceled" | "complete" | "errored" | "submitted";
 
 const PaymentSessionContext = React.createContext<PaymentSession | undefined>(undefined);
 
 const PaymentStatusContext = React.createContext<{
   paymentStatus: PaymentStatus,
-  setPaymentStatus: Function
+  setPaymentStatus: Function,
+  signature: string | undefined,
+  setSignature: Function
 } | undefined>(undefined);
 
 type PaymentScopeProviderProps = { children: React.ReactNode };
@@ -42,6 +44,7 @@ export function PaymentSessionProvider({ children }: PaymentScopeProviderProps) 
   const [decoded, setDecoded] = useState<undefined | PaymentSession>(undefined);
   const [sessionEstablished, setSessionEstablished] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("incomplete");
+  const [signature, setSignature] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
@@ -93,7 +96,7 @@ export function PaymentSessionProvider({ children }: PaymentScopeProviderProps) 
   if (paymentStatus === "complete") {
     delete sessionStorage['jwt'];
     return (
-      <Redirect to="/success" />
+      <Redirect to={`success?signature=${signature}`} />
     );
   }
 
@@ -109,7 +112,7 @@ export function PaymentSessionProvider({ children }: PaymentScopeProviderProps) 
 
   return (
     <PaymentSessionContext.Provider value={decoded}>
-      <PaymentStatusContext.Provider value={{ paymentStatus, setPaymentStatus }}>
+      <PaymentStatusContext.Provider value={{ paymentStatus, setPaymentStatus, signature, setSignature }}>
         {children}
       </PaymentStatusContext.Provider>
     </PaymentSessionContext.Provider>
