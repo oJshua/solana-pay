@@ -56,7 +56,7 @@ export function Payment() {
         </div>
         :
         <div className="loader">
-          <Loader type="BallTriangle"
+          <Loader type="Rings"
             color="#00BFFF"
             height={192}
             width={192}
