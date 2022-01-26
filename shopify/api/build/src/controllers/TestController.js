@@ -19,16 +19,21 @@ const PaymentSession_1 = require("../entities/PaymentSession");
 const uuid_1 = require("uuid");
 const web3_js_1 = require("@solana/web3.js");
 const OnboardSession_1 = require("../entities/OnboardSession");
+const RedisService_1 = require("../services/RedisService");
+const REDIS_SET = 'references';
 let TestController = class TestController {
     async initiate(req) {
         const paymentSessionId = (0, uuid_1.v4)();
+        const reference = web3_js_1.Keypair.generate().publicKey.toString();
+        await this.redisService.redis.sadd(REDIS_SET, reference);
         const result = await this.paymentSessionRepository.insert({
             paymentSessionId,
             integration: "test",
             meta: {},
+            reference,
             paymentInformation: {
                 recipient: "8HHPdNSLhTTsiYnMVBNp6myH37VQjJQh2ZVNQ5Fpdd4B",
-                reference: web3_js_1.Keypair.generate().publicKey.toString(),
+                reference,
                 paymentOptions: [
                     {
                         amount: 0.001,
@@ -63,6 +68,10 @@ __decorate([
     typescript_ioc_1.Inject,
     __metadata("design:type", OnboardSession_1.OnboardSessionRepository)
 ], TestController.prototype, "onboardSessionRepository", void 0);
+__decorate([
+    typescript_ioc_1.Inject,
+    __metadata("design:type", RedisService_1.RedisService)
+], TestController.prototype, "redisService", void 0);
 __decorate([
     (0, tsoa_1.Get)("initiate"),
     __param(0, (0, tsoa_1.Request)()),

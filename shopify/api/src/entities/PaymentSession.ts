@@ -14,6 +14,7 @@ import BigNumber from "bignumber.js";
 import { encodeURL } from "@solana/pay";
 import { PublicKey } from "@solana/web3.js";
 import { Singleton } from "typescript-ioc";
+import { InitiatePaymentDto } from "../interfaces/InitiatePaymentDto";
 
 export interface PaymentOption {
   tokenMint?: string;
@@ -42,7 +43,22 @@ export class PaymentSession {
   integration?: string;
 
   @Column()
-  meta: any;
+  shop: string;
+
+  @Column()
+  meta: InitiatePaymentDto;
+
+  @Column()
+  reference: string;
+
+  @Column()
+  completed?: boolean;
+
+  @Column()
+  redirectUrl?: string;
+
+  @Column()
+  cancelUrl: string;
 
   @Column()
   paymentInformation: PaymentInformation;

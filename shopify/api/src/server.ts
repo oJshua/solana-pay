@@ -17,6 +17,7 @@ import {
   PaymentSession,
   PaymentSessionRepository,
 } from "./entities/PaymentSession";
+import { ReferenceService } from "./services/ReferenceService";
 
 const port = process.env.PORT || 3000;
 
@@ -30,6 +31,9 @@ const port = process.env.PORT || 3000;
     username: process.env.MONGO_USERNAME,
     password: process.env.MONGO_PASSWORD,
   });
+
+  const referenceService = Container.get(ReferenceService);
+  referenceService.start();
 
   Container.bind(PaymentSessionRepository).factory(() =>
     getMongoRepository(PaymentSession)

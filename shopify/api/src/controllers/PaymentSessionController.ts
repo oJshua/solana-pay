@@ -1,4 +1,4 @@
-import { Get } from "@tsoa/runtime";
+import { Get, Request } from "@tsoa/runtime";
 import { Query } from "@tsoa/runtime";
 import { Route } from "@tsoa/runtime";
 import { Controller } from "@tsoa/runtime";
@@ -8,10 +8,17 @@ import {
   PaymentSession,
   PaymentSessionRepository,
 } from "../entities/PaymentSession";
+import { checkHmacValidity } from "shopify-hmac-validation";
 import { InitiatePaymentDto } from "../interfaces/InitiatePaymentDto";
 import { RedirectUrl } from "../interfaces/RedirectUrl";
 import { KeystoreService } from "../services/KeystoreService";
 import { v4 } from "uuid";
+import { MerchantRepository } from "../entities/Merchant";
+import { Keypair } from "@solana/web3.js";
+import { RedisService } from "../services/RedisService";
+
+const REDIS_SET = 'references';
+const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
 @Route("payment-session")
 export class PaymentSessionController extends Controller {
@@ -19,7 +26,13 @@ export class PaymentSessionController extends Controller {
   keystore: KeystoreService;
 
   @Inject
+  redisService: RedisService;
+
+  @Inject
   paymentSessionRepository: PaymentSessionRepository;
+
+  @Inject
+  merchantRepository: MerchantRepository;
 
   @Get()
   async getPaymentSession(
@@ -39,6 +52,7 @@ export class PaymentSessionController extends Controller {
       paymentSessionId,
       paymentInformation: paymentSession.paymentInformation,
       paymentUrl: PaymentSession.encodeBip(paymentSession),
+      cancelUrl: paymentSession.cancelUrl
     });
 
     return token;
@@ -46,19 +60,54 @@ export class PaymentSessionController extends Controller {
 
   @Post("initiate")
   async initiatePayment(
-    @Body() body: InitiatePaymentDto
+    @Body() body: InitiatePaymentDto,
+    @Request() req,
+    @Res() invalidRequest: TsoaResponse<500, string>
   ): Promise<RedirectUrl> {
     const paymentSessionId = v4();
+
+    if (!checkHmacValidity(process.env.SHOPIFY_API_SECRET, req.query)) {
+      return invalidRequest(500, "Invalid hmac");
+    }
+
+    const reference = Keypair.generate().publicKey.toString();
+
+    const { shop } = req.query;
+    const { cancel_url } = body;
+
+    const merchant = await this.merchantRepository.findOne({
+      shop
+    });
+
+    await this.redisService.redis.sadd(REDIS_SET, reference);
 
     await this.paymentSessionRepository.create({
       paymentSessionId,
       integration: "shopify",
       meta: body,
+      shop,
+      reference,
+      cancelUrl: cancel_url,
+      paymentInformation: {
+        amount: body.amount,
+        recipient: merchant.wallet,
+        reference,
+        paymentOptions: [{
+          amount: body.amount,
+          tokenSymbol: 'USDC',
+          tokenMint: USDC_MINT,
+        }]
+      }
     });
 
     return {
       redirect_url: this.getRedirectUrl(paymentSessionId),
     };
+  }
+
+
+  async complete() {
+
   }
 
   @Post("refund")

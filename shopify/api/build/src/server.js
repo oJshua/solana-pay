@@ -10,6 +10,7 @@ const Merchant_1 = require("./entities/Merchant");
 const OnboardRequest_1 = require("./entities/OnboardRequest");
 const OnboardSession_1 = require("./entities/OnboardSession");
 const PaymentSession_1 = require("./entities/PaymentSession");
+const ReferenceService_1 = require("./services/ReferenceService");
 const port = process.env.PORT || 3000;
 (async () => {
     const connection = await (0, typeorm_1.createConnection)({
@@ -21,6 +22,8 @@ const port = process.env.PORT || 3000;
         username: process.env.MONGO_USERNAME,
         password: process.env.MONGO_PASSWORD,
     });
+    const referenceService = typescript_ioc_1.Container.get(ReferenceService_1.ReferenceService);
+    referenceService.start();
     typescript_ioc_1.Container.bind(PaymentSession_1.PaymentSessionRepository).factory(() => (0, typeorm_1.getMongoRepository)(PaymentSession_1.PaymentSession));
     typescript_ioc_1.Container.bind(OnboardRequest_1.OnboardRequestRepository).factory(() => (0, typeorm_1.getMongoRepository)(OnboardRequest_1.OnboardRequest));
     typescript_ioc_1.Container.bind(OnboardSession_1.OnboardSessionRepository).factory(() => (0, typeorm_1.getMongoRepository)(OnboardSession_1.OnboardSession));

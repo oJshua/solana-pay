@@ -38,8 +38,28 @@ __decorate([
 ], PaymentSession.prototype, "integration", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], PaymentSession.prototype, "shop", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
     __metadata("design:type", Object)
 ], PaymentSession.prototype, "meta", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], PaymentSession.prototype, "reference", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Boolean)
+], PaymentSession.prototype, "completed", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], PaymentSession.prototype, "redirectUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], PaymentSession.prototype, "cancelUrl", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Object)

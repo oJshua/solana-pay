@@ -10,10 +10,12 @@ import { PaymentStatus, usePayment } from '../hooks/usePayment';
 import { SuccessIcon } from '../components/SuccessIcon';
 import { ErrorIcon } from '../components/ErrorIcon';
 import { QRCode } from '../components/QRCode';
+import { PaymentSessionContextState, useSession } from '../hooks/useSession';
 
 export const Payment: FC = () => {
   const { status } = usePayment();
-  console.log(status);
+  const { paymentInformation }: PaymentSessionContextState = useSession();
+
   return (
     <div className="container pt-4">
       <div className="d-flex mb-4">
@@ -26,16 +28,16 @@ export const Payment: FC = () => {
         <div className="flex-1"></div>
       </div>
 
-      <div className="d-flex justify-content-center">
+      {/* <div className="d-flex justify-content-center">
         <p>
           Pay United by Blue
         </p>
-      </div>
+      </div> */}
 
       <div className="d-flex justify-content-center">
         <h2 className="payment-amount">
           <USDC />
-            48.00 USDC
+            {paymentInformation.paymentOptions[0].amount} USDC
         </h2>
       </div>
 

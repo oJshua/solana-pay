@@ -4,6 +4,9 @@ import { PaymentSessionRepository } from "../entities/PaymentSession";
 import { v4 } from "uuid";
 import { Keypair } from "@solana/web3.js";
 import { OnboardSessionRepository } from "../entities/OnboardSession";
+import { RedisService } from "../services/RedisService";
+
+const REDIS_SET = 'references';
 
 @Route("test")
 export class TestController {
@@ -13,17 +16,26 @@ export class TestController {
   @Inject
   onboardSessionRepository: OnboardSessionRepository;
 
+  @Inject
+  redisService: RedisService;
+
+
   @Get("initiate")
   async initiate(@Request() req) {
     const paymentSessionId = v4();
+
+    const reference = Keypair.generate().publicKey.toString();
+
+    await this.redisService.redis.sadd(REDIS_SET, reference);
 
     const result = await this.paymentSessionRepository.insert({
       paymentSessionId,
       integration: "test",
       meta: {},
+      reference,
       paymentInformation: {
         recipient: "8HHPdNSLhTTsiYnMVBNp6myH37VQjJQh2ZVNQ5Fpdd4B",
-        reference: Keypair.generate().publicKey.toString(),
+        reference,
         paymentOptions: [
           {
             amount: 0.001,
