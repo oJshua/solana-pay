@@ -102,7 +102,7 @@ let OnboardingController = class OnboardingController extends tsoa_1.Controller 
                 "X-Shopify-Access-Token": access_token,
             },
         });
-        req.res.redirect(`${process.env.FRONTEND_URL}/onboarding?onboardSessionId=${onboardSessionId}`);
+        req.res.redirect(`${process.env.FRONTEND_URL}?onboardSessionId=${onboardSessionId}`);
     }
     async getSession(onboardSessionId, notFoundResponse) {
         const onboardSession = await this.onboardSessionRepository.findOne({
@@ -124,8 +124,6 @@ let OnboardingController = class OnboardingController extends tsoa_1.Controller 
                 shop,
                 wallet,
             },
-        }, {
-            upsert: true,
         });
     }
     getShopifyUrl(shop, state) {

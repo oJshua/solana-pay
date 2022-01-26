@@ -144,7 +144,7 @@ export class OnboardingController extends Controller {
     );
 
     req.res.redirect(
-      `${process.env.FRONTEND_URL}/onboarding?onboardSessionId=${onboardSessionId}`
+      `${process.env.FRONTEND_URL}?onboardSessionId=${onboardSessionId}`
     );
   }
 
@@ -183,9 +183,6 @@ export class OnboardingController extends Controller {
           shop,
           wallet,
         },
-      },
-      {
-        upsert: true,
       }
     );
   }

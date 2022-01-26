@@ -55,6 +55,6 @@ const Content: FC = () => {
     case "onboarding":
       return <Onboard />;
     default:
-      return <h1>Undefined scope!</h1>;
+      return null;
   }
 }
