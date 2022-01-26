@@ -6,7 +6,7 @@ import { useSession } from '../hooks/useSession';
 
 export const QRCode: FC = () => {
   const { paymentUrl } = useSession();
-  const options = useMemo(() => createQROptions(paymentUrl, 400, '#EFF2F3', '#2A2A2A'), []);
+  const options = useMemo(() => createQROptions(paymentUrl, 256, '#EFF2F3', '#2A2A2A'), []);
 
   const qr = useMemo(() => new QRCodeStyling(), []);
   useLayoutEffect(() => qr.update(options), [qr, options]);

@@ -100,7 +100,7 @@ const BuyOptions: FC = () => {
           Alternatively, you can open a Solana-compatable wallet and scan this code to pay for this transaction.
         </p>
 
-        <div>
+        <div className="d-flex justify-content-center">
           <QRCode />
         </div>
       </div>
