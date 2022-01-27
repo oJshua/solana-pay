@@ -17,12 +17,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OnboardingController = void 0;
 const tsoa_1 = require("tsoa");
+const cross_fetch_1 = __importDefault(require("cross-fetch"));
 const shopify_hmac_validation_1 = require("shopify-hmac-validation");
 const OnboardRequest_1 = require("../entities/OnboardRequest");
 const typescript_ioc_1 = require("typescript-ioc");
 const uuid_1 = require("uuid");
 const Merchant_1 = require("../entities/Merchant");
-const cross_fetch_1 = __importDefault(require("cross-fetch"));
 const KeystoreService_1 = require("../services/KeystoreService");
 const OnboardSession_1 = require("../entities/OnboardSession");
 let OnboardingController = class OnboardingController extends tsoa_1.Controller {

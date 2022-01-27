@@ -11,12 +11,12 @@ import {
   TsoaResponse,
 } from "tsoa";
 
+import fetch from "cross-fetch";
 import { checkHmacValidity } from "shopify-hmac-validation";
 import { OnboardRequestRepository } from "../entities/OnboardRequest";
 import { Inject } from "typescript-ioc";
 import { v4 } from "uuid";
 import { MerchantRepository } from "../entities/Merchant";
-import fetch from "cross-fetch";
 import { KeystoreService } from "../services/KeystoreService";
 import { OnboardSessionRepository } from "../entities/OnboardSession";
 
